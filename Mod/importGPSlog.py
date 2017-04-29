@@ -30,7 +30,7 @@ __url__ = ["https://github.com/KeithSloan/FreeCAD_ImportGPSlog"]
 
 printverbose = False
 
-import FreeCAD, os, sys
+import FreeCAD, os, sys, re
 if FreeCAD.GuiUp:
     import FreeCADGui
     gui = True
@@ -84,7 +84,7 @@ def insert(filename,docname):
 def processGPSlog(filename):
     global doc
 
-    FreeCAD.Console.PrintMessage('Import GPS logfile \n')
+    FreeCAD.Console.PrintMessage('Import GPS logfile : '+filename+'\n')
     if printverbose: print ('ImportGPSlog Version 0.1')
     # f = pythonopen(filename, 'r')
     with pythonopen(filename,'rb') as f:
@@ -163,9 +163,23 @@ def processLine(line):
 def processA(line) :
 	print "Manufacturer ID"
 
-def processB(line) :
-    	print "Fix"
+def dm2dd(degrees, minutes, direction):
+#    print minutes
+#    print degrees
+    dd = float(degrees) + float(minutes)/60;
+    if direction == 'E' or direction == 'N':
+        dd *= -1
+    return dd;
 
+def processB(line) :
+    	print "Fix  :"
+	print "Lat  : "+line[7:9]+" "+line[9:11]+"."+line[11:14]+" "+line[14]
+	lat = dm2dd(line[7:9],line[9:11]+"."+line[11:14],line[14])
+	print "Lat degrees : "+str(lat) 
+	print "Long : "+line[15:18]+" "+line[18:20]+"."+line[20:23]+" "+line[23]
+	long = dm2dd(line[15:18],line[18:20]+"."+line[20:23],line[23])
+	print "Long degrees : "+str(long)
+ 
 def processC(line) :
 	print "Task/Declaration"
 
@@ -182,7 +196,7 @@ def processG(line) :
         print "Security"
 
 def processH(line) :
-	print "File Header"
+	print "Header : "+line
 
 def processI(line) :
 	print "Fix extension"
