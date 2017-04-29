@@ -79,17 +79,119 @@ def insert(filename,docname):
         doc=FreeCAD.newDocument(docname)
     if filename.lower().endswith('.igc'):
         processGPSlog(filename)
-        processcsg(filename)
+
 
 def processGPSlog(filename):
     global doc
 
     FreeCAD.Console.PrintMessage('Import GPS logfile \n')
     if printverbose: print ('ImportGPSlog Version 0.1')
-    f = pythonopen(filename, 'r')
-
+    # f = pythonopen(filename, 'r')
+    with pythonopen(filename,'rb') as f:
+       while True:
+          line=f.readline()
+          if not line: break
+          processLine(line)
     f.close()
     if printverbose:
         print('End ImportGPSlog')
     FreeCAD.Console.PrintMessage('End processing GPS log file\n')
     doc.recompute()
+
+class switch(object):
+    value = None
+    def __new__(class_, value):
+        class_.value = value
+        return True
+
+def case(*args):
+    return any((arg == switch.value for arg in args))
+
+def processLine(line):
+    while switch(line[0]):
+        if case('A'):
+           processA(line) 
+           break
+
+        if case('B'):
+           processB(line) 
+           break
+
+        if case('C'):
+           processC(line) 
+           break
+        
+        if case('D'):
+           processD(line) 
+           break
+
+        if case('E'):
+           processE(line) 
+           break
+
+        if case('F'):
+           processF(line) 
+           break
+
+        if case('G'):
+           processG(line) 
+           break
+
+        if case('H'):
+           processH(line) 
+           break
+
+        if case('I'):
+           processI(line) 
+           break
+
+        if case('J'):
+           processJ(line) 
+           break
+
+        if case('K'):
+           processK(line) 
+           break
+
+        if case('L'):
+           processL(line) 
+           break
+
+        print "Default"
+        break
+
+def processA(line) :
+	print "Manufacturer ID"
+
+def processB(line) :
+    	print "Fix"
+
+def processC(line) :
+	print "Task/Declaration"
+
+def processD(line) :
+	print "Diffrential GPS"
+
+def processE(line) :
+	print "Pilot Event" 
+
+def processF(line) :
+	print "Inital Satellite Constellation"
+
+def processG(line) :
+        print "Security"
+
+def processH(line) :
+	print "File Header"
+
+def processI(line) :
+	print "Fix extension"
+
+def processJ(line) :
+ 	print "Data List"
+
+def processK(line) :
+	print "Extension Data"
+
+def processL(line) :
+	print "Logbook"
