@@ -46,17 +46,17 @@ if open.__module__ == '__builtin__':
     pythonopen = open # to distinguish python built-in open function from the one declared here
 
 
-try:
-    _encoding = QtGui.QApplication.UnicodeUTF8
-    def translate(context, text):
-        "convenience function for Qt translator"
-        from PySide import QtGui
-        return QtGui.QApplication.translate(context, text, None, _encoding)
-except AttributeError:
-    def translate(context, text):
-        "convenience function for Qt translator"
-        from PySide import QtGui
-        return QtGui.QApplication.translate(context, text, None)
+#try:
+#    _encoding = QtGui.QApplication.UnicodeUTF8
+#    def translate(context, text):
+#        "convenience function for Qt translator"
+#        from PySide import QtGui
+#        return QtGui.QApplication.translate(context, text, None, _encoding)
+#except AttributeError:
+#    def translate(context, text):
+#        "convenience function for Qt translator"
+#        from PySide import QtGui
+#        return QtGui.QApplication.translate(context, text, None)
 
 def open(filename):
     "called when freecad opens a file."
@@ -91,5 +91,5 @@ def processGPSlog(filename):
     f.close()
     if printverbose:
         print('End ImportGPSlog')
-    FreeCAD.Console.PrintMessage('End processing CSG file\n')
+    FreeCAD.Console.PrintMessage('End processing GPS log file\n')
     doc.recompute()
