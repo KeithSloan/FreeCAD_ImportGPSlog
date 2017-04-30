@@ -30,7 +30,9 @@ __url__ = ["https://github.com/KeithSloan/FreeCAD_ImportGPSlog"]
 
 printverbose = False
 
-import FreeCAD, os, sys, re
+import FreeCAD, os, sys, re, math
+import Part, PartGui
+
 if FreeCAD.GuiUp:
     import FreeCADGui
     gui = True
@@ -82,8 +84,10 @@ def insert(filename,docname):
 
 
 def processGPSlog(filename):
-    global doc
+    global originFlg, doc, nodes
 
+    originFlg = False
+    nodes = list()
     FreeCAD.Console.PrintMessage('Import GPS logfile : '+filename+'\n')
     if printverbose: print ('ImportGPSlog Version 0.1')
     # f = pythonopen(filename, 'r')
@@ -93,10 +97,15 @@ def processGPSlog(filename):
           if not line: break
           processLine(line)
     f.close()
+    p = doc.addObject("Part::Polygon","GPS_Track")   
+    p.Nodes=nodes
+    v = doc.getObject("GPS_Track")
+    #print v.ShapeColor
+    #v.ShapeColor = (1.0,0,0)
+    doc.recompute()
     if printverbose:
         print('End ImportGPSlog')
     FreeCAD.Console.PrintMessage('End processing GPS log file\n')
-    doc.recompute()
 
 class switch(object):
     value = None
@@ -163,6 +172,15 @@ def processLine(line):
 def processA(line) :
 	print "Manufacturer ID"
 
+def getHeight(line) :
+    v = line[24]
+    if v == 'A' : h = line[25:30]
+    elif v == 'V' : h = line[30:35]
+    else : h = 0
+    print h
+    h = float(h)
+    return (h/1000)
+
 def dm2dd(degrees, minutes, direction):
 #    print minutes
 #    print degrees
@@ -172,14 +190,33 @@ def dm2dd(degrees, minutes, direction):
     return dd;
 
 def processB(line) :
-    	print "Fix  :"
+        global originFlg, x_origin, y_origin
+
+        print "Fix  :"
 	print "Lat  : "+line[7:9]+" "+line[9:11]+"."+line[11:14]+" "+line[14]
 	lat = dm2dd(line[7:9],line[9:11]+"."+line[11:14],line[14])
 	print "Lat degrees : "+str(lat) 
 	print "Long : "+line[15:18]+" "+line[18:20]+"."+line[20:23]+" "+line[23]
 	long = dm2dd(line[15:18],line[18:20]+"."+line[20:23],line[23])
 	print "Long degrees : "+str(long)
- 
+	z = getHeight(line)
+        r = 6371 + z
+	clat = math.cos(math.radians(lat))
+	rlong = math.radians(long)
+        x = r * clat * math.cos(rlong)
+	y = r * clat * math.sin(rlong)
+	if originFlg == True : 
+           x = x - x_origin
+	   y = y - y_origin
+	else :
+	   originFlg = True
+	   x_origin = x
+	   y_origin = y
+	   x = y = 0
+        print "x : "+str(x)+" y : "+str(y)+ " z : "+str(z)
+	v=FreeCAD.Vector(x,y,z)
+	nodes.append(v)
+
 def processC(line) :
 	print "Task/Declaration"
 
